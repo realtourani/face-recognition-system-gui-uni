@@ -9,6 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+import MainWin as MW
 
 
 class Ui_LoginWin(object):
@@ -155,7 +156,7 @@ class Ui_LoginWin(object):
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ToolTipText, brush)
         LoginWin.setPalette(palette)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("UI\\../Code/Images/icon_light.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(".\\../Code/Data/Images/icon_light.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         LoginWin.setWindowIcon(icon)
         LoginWin.setIconSize(QtCore.QSize(200, 200))
         self.centralwidget = QtWidgets.QWidget(LoginWin)
@@ -165,7 +166,7 @@ class Ui_LoginWin(object):
         self.IconLogin.setMinimumSize(QtCore.QSize(200, 200))
         self.IconLogin.setMaximumSize(QtCore.QSize(200, 200))
         self.IconLogin.setText("")
-        self.IconLogin.setPixmap(QtGui.QPixmap("UI\\../Code/Images/icon_dark.png"))
+        self.IconLogin.setPixmap(QtGui.QPixmap(".\\../Code/Data/Images/icon_dark.png"))
         self.IconLogin.setScaledContents(True)
         self.IconLogin.setObjectName("IconLogin")
         self.labelUsername = QtWidgets.QLabel(self.centralwidget)
@@ -182,17 +183,8 @@ class Ui_LoginWin(object):
         font.setPointSize(10)
         self.labelPassword.setFont(font)
         self.labelPassword.setObjectName("labelPassword")
-        self.login = QtWidgets.QLabel(self.centralwidget)
-        self.login.setGeometry(QtCore.QRect(400, 420, 100, 100))
-        self.login.setMinimumSize(QtCore.QSize(100, 100))
-        self.login.setMaximumSize(QtCore.QSize(100, 100))
-        self.login.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.login.setText("")
-        self.login.setPixmap(QtGui.QPixmap("UI\\../Code/Images/icon-green-login-1000-px.png"))
-        self.login.setScaledContents(True)
-        self.login.setObjectName("login")
         self.labelAbouMe = QtWidgets.QLabel(self.centralwidget)
-        self.labelAbouMe.setGeometry(QtCore.QRect(10, 560, 201, 31))
+        self.labelAbouMe.setGeometry(QtCore.QRect(10, 550, 201, 31))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(10)
@@ -209,6 +201,18 @@ class Ui_LoginWin(object):
         self.Password.setEchoMode(QtWidgets.QLineEdit.Password)
         self.Password.setAlignment(QtCore.Qt.AlignCenter)
         self.Password.setObjectName("Password")
+        self.btnLogin = QtWidgets.QPushButton(self.centralwidget)
+        self.btnLogin.setGeometry(QtCore.QRect(400, 430, 100, 100))
+        self.btnLogin.setMinimumSize(QtCore.QSize(100, 100))
+        self.btnLogin.setMaximumSize(QtCore.QSize(100, 100))
+        self.btnLogin.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.btnLogin.setText("")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(".\\../Code/Data/Images/login2.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btnLogin.setIcon(icon1)
+        self.btnLogin.setIconSize(QtCore.QSize(100, 100))
+        self.btnLogin.setObjectName("btnLogin")
+        self.btnLogin.clicked.connect(self.HomePage)
         LoginWin.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(LoginWin)
         self.statusbar.setObjectName("statusbar")
@@ -224,6 +228,15 @@ class Ui_LoginWin(object):
         self.labelPassword.setText(_translate("LoginWin", "Password :"))
         self.labelAbouMe.setText(_translate("LoginWin", "Created By MohammadReza Tourani"))
 
+    def HomePage(self):
+        print(self.labelUsername)
+        if self.Username.text() == "admin" and self.Password.text() == "admin":
+            Form_mainwin.show()
+            LoginWin.close()
+
+        else:
+            QtWidgets.QMessageBox.critical(LoginWin, "Error", "Incorrect username or password")
+
 
 if __name__ == "__main__":
     import sys
@@ -231,5 +244,14 @@ if __name__ == "__main__":
     LoginWin = QtWidgets.QMainWindow()
     ui = Ui_LoginWin()
     ui.setupUi(LoginWin)
+
+    # Main Win #
+
+    camera = MW.Camera(0)
+    ui_mainwin = MW.Ui_MainWin(camera)
+    Form_mainwin = QtWidgets.QMainWindow()
+    ui_mainwin.setupUi(Form_mainwin)
+
+    #####
     LoginWin.show()
     sys.exit(app.exec_())
