@@ -442,7 +442,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../Code/Images/icon_light.png</normaloff>../Code/Images/icon_light.png</iconset>
+    <normaloff>../Code/Data/Images/icon_light.png</normaloff>../Code/Data/Images/icon_light.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="btnStart">
@@ -474,7 +474,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>../Code/Images/start.png</normaloff>../Code/Images/start.png</iconset>
+      <normaloff>../Code/Data/Images/start.png</normaloff>../Code/Data/Images/start.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -512,7 +512,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>../Code/Images/exit.png</normaloff>../Code/Images/exit.png</iconset>
+      <normaloff>../Code/Data/Images/exit.png</normaloff>../Code/Data/Images/exit.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -566,7 +566,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>../Code/Images/recognize.png</normaloff>../Code/Images/recognize.png</iconset>
+      <normaloff>../Code/Data/Images/recognize.png</normaloff>../Code/Data/Images/recognize.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -604,7 +604,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>../Code/Images/export.png</normaloff>../Code/Images/export.png</iconset>
+      <normaloff>../Code/Data/Images/export.png</normaloff>../Code/Data/Images/export.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -677,7 +677,7 @@
     </property>
     <property name="icon">
      <iconset>
-      <normaloff>../Code/Images/ok.png</normaloff>../Code/Images/ok.png</iconset>
+      <normaloff>../Code/Data/Images/ok.png</normaloff>../Code/Data/Images/ok.png</iconset>
     </property>
     <property name="iconSize">
      <size>
