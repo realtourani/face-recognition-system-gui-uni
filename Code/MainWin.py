@@ -210,6 +210,7 @@ class Ui_MainWin(object):
         self.btnStart.setIcon(icon1)
         self.btnStart.setIconSize(QtCore.QSize(100, 100))
         self.btnStart.setObjectName("btnStart")
+        self.btnStart.clicked.connect(self.start)
         self.btnExit = QtWidgets.QPushButton(self.centralwidget)
         self.btnExit.setGeometry(QtCore.QRect(1030, 120, 100, 100))
         self.btnExit.setMinimumSize(QtCore.QSize(100, 100))
@@ -310,9 +311,10 @@ class Ui_MainWin(object):
 
 if __name__ == "__main__":
     import sys
+    camera = Camera(0)
     app = QtWidgets.QApplication(sys.argv)
     MainWin = QtWidgets.QMainWindow()
-    ui = Ui_MainWin()
+    ui = Ui_MainWin(camera)
     ui.setupUi(MainWin)
     MainWin.show()
     sys.exit(app.exec_())
