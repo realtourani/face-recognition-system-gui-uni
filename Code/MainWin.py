@@ -238,6 +238,7 @@ class Ui_MainWin(object):
         self.btnRecognize.setIcon(icon3)
         self.btnRecognize.setIconSize(QtCore.QSize(100, 100))
         self.btnRecognize.setObjectName("btnRecognize")
+        self.btnRecognize.clicked.connect(self.recognize)
         self.btnExport = QtWidgets.QPushButton(self.centralwidget)
         self.btnExport.setGeometry(QtCore.QRect(1030, 10, 100, 100))
         self.btnExport.setMinimumSize(QtCore.QSize(100, 100))
@@ -249,29 +250,7 @@ class Ui_MainWin(object):
         self.btnExport.setIcon(icon4)
         self.btnExport.setIconSize(QtCore.QSize(100, 100))
         self.btnExport.setObjectName("btnExport")
-        self.inputVideoCapture = QtWidgets.QLineEdit(self.centralwidget)
-        self.inputVideoCapture.setGeometry(QtCore.QRect(1030, 310, 231, 31))
-        self.inputVideoCapture.setStyleSheet("color rgb(0, 0, 0)")
-        self.inputVideoCapture.setObjectName("inputVideoCapture")
-        self.labelVideoCapture = QtWidgets.QLabel(self.centralwidget)
-        self.labelVideoCapture.setGeometry(QtCore.QRect(1030, 280, 221, 21))
-        font = QtGui.QFont()
-        font.setFamily("Times New Roman")
-        font.setPointSize(10)
-        self.labelVideoCapture.setFont(font)
-        self.labelVideoCapture.setAlignment(QtCore.Qt.AlignCenter)
-        self.labelVideoCapture.setObjectName("labelVideoCapture")
-        self.btnOk = QtWidgets.QPushButton(self.centralwidget)
-        self.btnOk.setGeometry(QtCore.QRect(1100, 370, 100, 100))
-        self.btnOk.setMinimumSize(QtCore.QSize(100, 100))
-        self.btnOk.setMaximumSize(QtCore.QSize(100, 100))
-        self.btnOk.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.btnOk.setText("")
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap(".\\../Code/Data/Images/ok.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.btnOk.setIcon(icon5)
-        self.btnOk.setIconSize(QtCore.QSize(100, 100))
-        self.btnOk.setObjectName("btnOk")
+
         MainWin.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWin)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1300, 21))
@@ -288,7 +267,6 @@ class Ui_MainWin(object):
     def retranslateUi(self, MainWin):
         _translate = QtCore.QCoreApplication.translate
         MainWin.setWindowTitle(_translate("MainWin", "Face Recognition System"))
-        self.labelVideoCapture.setText(_translate("MainWin", "Please write the video capture source :"))
 
     def start(self):
         self.camera.openCamera()
@@ -303,7 +281,8 @@ class Ui_MainWin(object):
         self.frame.setPixmap(pixmap)
 
     def recognize(self):
-        pass
+        import detection
+        detection
 
     def OK(self):
         self.vc = cv2.VideoCapture(self.inputVideoCapture.text)
