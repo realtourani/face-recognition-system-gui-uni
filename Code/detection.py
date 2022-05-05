@@ -1,152 +1,97 @@
-import cv2 
+#region libraries
+import cv2
+import face_recognition
 import numpy as np
-import mtcnn
-from architecture import *
-from train_v2 import normalize,l2_normalizer
-from scipy.spatial.distance import cosine
-from tensorflow.python.keras.models import load_model
-import pickle
-import sqlite3
-from datetime import datetime
+import os
+#endregion
 
 
-############
+#region variables
 
-conn = sqlite3.connect('Data/college.db')
+path = 'Faces'  # The name of folder of images
+images = [] # an empty list for putting each known image in it 
+names = [] # an empty list for putting each name of images
+my_list = [] # an empty list for the path
+my_list = os.listdir(path) # read the images in the folder
+# print(my_list)
 
-conn.execute('''CREATE TABLE IF NOT EXISTS faces(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            Name varchar(50) NOT NULL,
-            Accuracy varchar(50) NOT NULL,
-            Time varchar(50) NOT NULL) ''')
-
-conn.commit()
-############
-
-confidence_t=0.99
-recognition_t=0.4
-required_size = (160,160)
-time_list = []
-mm_time = []
+#endregion
 
 
-def get_face(img, box):
-    x1, y1, width, height = box
-    x1, y1 = abs(x1), abs(y1)
-    x2, y2 = x1 + width, y1 + height
-    face = img[y1:y2, x1:x2]
-    return face, (x1, y1), (x2, y2)
+#region known images
+for item in my_list: # make a loop for read each known images 
+    img_current = cv2.imread(f'{path}/{item}') # read the image by opencv
+    images.append(img_current) # append each knwon images in images list
+    names.append(item.split('.')[0]) # append each name of images in names list
 
-def get_encode(face_encoder, face, size):
-    face = normalize(face)
-    face = cv2.resize(face, size)
-    encode = face_encoder.predict(np.expand_dims(face, axis=0))[0]
-    return encode
+# print(images)
+
+#endregion
 
 
-def load_pickle(path):
-    with open(path, 'rb') as f:
-        encoding_dict = pickle.load(f)
-    return encoding_dict
+#region known encodes
+def encoding(images): # Make a function for encode known images
+    encode_list = [] # an empty list for put each knwon encode in it
 
-def detect(img ,detector,encoder,encoding_dict):
-    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    results = detector.detect_faces(img_rgb)
-    for res in results:
-        if res['confidence'] < confidence_t:
-            continue
-        face, pt_1, pt_2 = get_face(img_rgb, res['box'])
-        encode = get_encode(encoder, face, required_size)
-        encode = l2_normalizer.transform(encode.reshape(1, -1))[0]
-        name = 'unknown'
+    for image in images: # make a loop for take each image and encode it
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) # convert the color of images to encode them
+        encode = face_recognition.face_encodings(image)[0] # encode the images
+        encode_list.append(encode) # append each encode in the encode_list
 
-        distance = float("inf")
-        for db_name, db_encode in encoding_dict.items():
-            dist = cosine(db_encode, encode)
-            if dist < recognition_t and dist < distance:
-                name = db_name
-                distance = dist
+    return encode_list 
 
-        if name == 'unknown':
-            cv2.rectangle(img, pt_1, pt_2, (0, 0, 255), 2)
-            cv2.putText(img, name, pt_1, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+known_encode = encoding(images) # put the function in another variable 
+
+# print(len(known_encode)) # prent the lenth of images
+
+#endregion
 
 
-            now = datetime.now()
-            current_time = now.strftime("%H:%M:%S")
-            time_list.append(current_time)
-            time_list.sort() 
-            min_time = time_list[0]
-            time_list.clear()
-            print(name, distance, min_time)
-            # sql = "INSERT INTO `rsb`.`faces` (`name`, `time`, `accuracy`) VALUES (%s, %s, %s);" 
-            # sql = "INSERT INTO rsb.faces (name, time, accuracy ) \ VALUES (%s, %s, %s)"
-            # val = (str(name), min_time, "0")
-            
-            # conn.execute(sql,val)
-            # conn.commit()
+#region new faces
+cap = cv2.VideoCapture(0) # for read frames from webcam
 
-            conn.execute("INSERT INTO faces (Name,Time,Accuracy) VALUES (?, ?, ?)", (str(name), min_time, str(distance)))
-            conn.commit()
-            
+while (cap.isOpened()): # While the webcam works correctly and if has no problems for webcam , Then loop will work
+    ret,frame = cap.read() # read each frame from webcam
+    resize = cv2.resize(frame, (0,0), None , 0.25 , 0.25) # resize the frame
+    color = cv2.cvtColor(resize, cv2.COLOR_BGR2RGB) # convert the color of frame to RGB
+    faces_loc = face_recognition.face_locations(color) # find the location of each face
+    faces_encode = face_recognition.face_encodings(color,faces_loc) # encode the recognized faces
+
+    for faceLoc , encodeFace in zip(faces_loc,faces_encode): # Make a loop for match each face location and encode face 
+        matches = face_recognition.compare_faces(known_encode, encodeFace) # copare the new faces and known faces together
+        face_distance = face_recognition.face_distance(known_encode, encodeFace) # find the distance of new encodes and known encodes
+        matchesIndex = np.argmin(face_distance) # return the Minimum distance of faces
 
 
-        else:            
-            cv2.rectangle(img, pt_1, pt_2, (0, 255, 0), 2)
-            cv2.putText(img, name + f'__{distance:.2f}', (pt_1[0], pt_1[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                        (0, 200, 200), 2)
+        if matches[matchesIndex]: # there is a condition that can improve the accuracy of recognition and if this condition will be true :
+            name = names[matchesIndex].upper() # upper the names
+            # print(name)
 
-            now = datetime.now()
-            current_time = now.strftime("%H:%M:%S")
-            time_list.append(current_time)
-            time_list.sort()
-            min_time = time_list[0]
-            time_list.clear()
-            # found_name = name
-            # break
+            y1,x2,y2,x1 = faceLoc # define the points of location of faces
+            y1,x2,y2,x1 = y1*4 , x2*4 , y2*4 , x1*4 # because we resized the frame , now we have to multiply it by 4
+
+            cv2.rectangle(frame, (x1,y1), (x2,y2), (255,0,255),2) # Draw a rectangle around the recognized faces
+            cv2.rectangle(frame, (x1,y2-20), (x2,y2), (255,0,255),cv2.FILLED) # Draw a Filled rectangle
+            cv2.putText(frame, name, (x1+4, y2-4), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255),1) # write down the name of face in the Filled rectangle that we has drawn
+
+        else: # This Condition is for Unknown faces
+            y1,x2,y2,x1 = faceLoc # define the points of location of faces
+            y1,x2,y2,x1 = y1*4 , x2*4 , y2*4 , x1*4 # because we resized the frame , now we have to multiply it by 4
+
+            cv2.rectangle(frame, (x1,y1), (x2,y2), (255,0,255),2) # Draw a rectangle around the recognized faces
+            cv2.rectangle(frame, (x1,y2-20), (x2,y2), (255,0,255),cv2.FILLED) # Draw a Filled rectangle
+            cv2.putText(frame, 'Unknown Face', (x1+4, y2-4), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255),1) # write down the name of face in the Filled rectangle that we has drawn
+
+
+    cv2.imshow('output', frame) # show the output
+    if cv2.waitKey(1) == ord('q'): # if you press q button the program will be closed
+        break
+
+#endregion
+
+
+cap.release() # release the cap (webcam)
+cv2.destroyAllWindows() # destroy all windows and close all of the resources
+
         
-            print(name, distance, min_time)
-            # sql = "INSERT INTO `rsb`.`faces` (`name`, `time`, `accuracy`) VALUES (%s, %s, %s);"
-            # sql = "INSERT INTO rsb.faces (name, time, accuracy ) \ VALUES (%s, %s, %s)"
-            # val = (str(name), min_time, str(distance))
-            
-            # conn.execute(sql,val)
-            # conn.commit()
-            conn.execute("INSERT INTO faces (Name,Time,Accuracy) VALUES (?, ?, ?)", (str(name), min_time, str(distance)))
-            conn.commit()
-
-    return img 
-
-
-
-# if __name__ == "__main__":
-required_shape = (160,160)
-face_encoder = InceptionResNetV2()
-path_m = "Data/facenet_keras_weights.h5"
-face_encoder.load_weights(path_m)
-encodings_path = 'Data/encodings/encodings.pkl'
-face_detector = mtcnn.MTCNN()
-encoding_dict = load_pickle(encodings_path)
-
-cap = cv2.VideoCapture(0)
-
-while cap.isOpened():
-    ret,frame = cap.read()
-
-    if not ret:
-        print("CAM NOT OPEND") 
-        break
     
-    frame= detect(frame , face_detector , face_encoder , encoding_dict)
-
-    cv2.imshow('camera', frame)
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-conn.close()
-cv2.destroyAllWindows()
-# cap.release()
-    
-
-
