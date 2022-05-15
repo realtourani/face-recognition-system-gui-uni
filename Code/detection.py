@@ -3,6 +3,8 @@ import cv2
 import face_recognition
 import numpy as np
 import os
+import sqlite3
+import datetime
 #endregion
 
 
@@ -13,10 +15,25 @@ images = [] # an empty list for putting each known image in it
 names = [] # an empty list for putting each name of images
 my_list = [] # an empty list for the path
 my_list = os.listdir(path) # read the images in the folder
+time_list = []  # input times
+mm_time = []  # Minimum time
 # print(my_list)
 
 #endregion
 
+#region DB
+
+conn = sqlite3.connect('Data/college.db')
+
+conn.execute('''CREATE TABLE IF NOT EXISTS faces(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Name varchar(50) NOT NULL,
+            Accuracy varchar(50) NOT NULL,
+            Time varchar(50) NOT NULL) ''')
+
+conn.commit()
+
+#endregion
 
 #region known images
 for item in my_list: # make a loop for read each known images 
@@ -74,6 +91,16 @@ while (cap.isOpened()): # While the webcam works correctly and if has no problem
             cv2.rectangle(frame, (x1,y2-20), (x2,y2), (255,0,255),cv2.FILLED) # Draw a Filled rectangle
             cv2.putText(frame, name, (x1+4, y2-4), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255),1) # write down the name of face in the Filled rectangle that we has drawn
 
+            now = datetime.datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            time_list.append(current_time)
+            time_list.sort()
+            min_time = time_list[0]
+            time_list.clear()
+
+            conn.execute("INSERT INTO faces (Name,Time,Accuracy) VALUES (?, ?, ?)", (str(name), min_time, str(face_distance)))
+            conn.commit()
+
         else: # This Condition is for Unknown faces
             y1,x2,y2,x1 = faceLoc # define the points of location of faces
             y1,x2,y2,x1 = y1*4 , x2*4 , y2*4 , x1*4 # because we resized the frame , now we have to multiply it by 4
@@ -82,6 +109,13 @@ while (cap.isOpened()): # While the webcam works correctly and if has no problem
             cv2.rectangle(frame, (x1,y2-20), (x2,y2), (255,0,255),cv2.FILLED) # Draw a Filled rectangle
             cv2.putText(frame, 'Unknown Face', (x1+4, y2-4), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255),1) # write down the name of face in the Filled rectangle that we has drawn
 
+            now = datetime.datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            time_list.append(current_time)
+            time_list.sort() 
+            min_time = time_list[0]
+            time_list.clear()
+            print(name, matchesIndex, min_time)
 
     cv2.imshow('output', frame) # show the output
     if cv2.waitKey(1) == ord('q'): # if you press q button the program will be closed
